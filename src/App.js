@@ -1,24 +1,79 @@
-import logo from './logo.svg';
+import React, { useEffect } from 'react'
 import './App.css';
+import {BrowserRouter, Routes, Route} from "react-router-dom"
+import Header from './Header'
+import Home from './Home'
+import Checkout from './Checkout'
+import Login from "./Login"
+import {auth} from './firebase'
+import {useStateValue} from './StateProvider';
+
 
 function App() {
+
+  const [{basket}, dispatch] = useStateValue();
+
+//useEffect >>>>>>>>>>>>> powerful
+//piece of code which runs based on given condition
+
+useEffect(()=>{
+  const unsubscribe = auth.onAuthStateChanged((authUser)=>{
+    if (authUser){
+      // the user is logged in....
+      
+dispatch({
+  type:"SET_USER",
+  user: authUser
+})
+
+
+    }else{
+      //the user is logged out....
+      dispatch({
+        type:"SET_USER",
+        user: null
+      })
+    }
+  })
+
+return () =>{
+  // Any cleanupoperations go in there
+unsubscribe();
+};
+
+},[]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <BrowserRouter>
+   
+    <div className="app">
+
+      <Routes>
+      <Route path="/checkout" element={<div><Header/> <Checkout/></div>}>
+       
+        </Route>
+
+        <Route path="/login" element={<div><Login/></div>}>
+          
+          </Route>
+
+{/* this is default route */}
+        <Route path="/" element={<div><Header/> <Home/></div>}>
+        
+         
+          </Route>
+
+{/* this is for wrong url */}
+          <Route path="*" element="ERROR 404">
+          
+          </Route>
+
+      </Routes>
+     
+      
     </div>
+   
+    </BrowserRouter>
   );
 }
 
